@@ -2,20 +2,18 @@
 import { setTheme as setEditorTheme } from '../editor/editor.js';
 
 const STORAGE_KEY = 'marklink-theme';
-let currentTheme = 'light';
+let currentTheme = 'dark'; // Default to dark
 
 /**
  * Initialize theme system
  */
 export function initTheme() {
-  // Check localStorage first
+  // Check localStorage first; default to dark if no saved preference
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved === 'dark' || saved === 'light') {
     currentTheme = saved;
   } else {
-    // Auto-detect system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    currentTheme = prefersDark ? 'dark' : 'light';
+    currentTheme = 'dark'; // Dark mode by default
   }
 
   applyTheme(currentTheme);

@@ -8,7 +8,7 @@ import { initTheme, toggleTheme, isDark } from './ui/theme-toggle.js';
 import { initToolbar } from './ui/toolbar.js';
 import { initSidebar, showSidebar } from './ui/sidebar.js';
 import { initShortcuts } from './ui/shortcuts.js';
-import { openFile, saveFile, getCurrentFileName, setFileName } from './file/file-manager.js';
+import { openFile, saveFile, quickSave, getCurrentFileName, setFileName } from './file/file-manager.js';
 import { initDragDrop } from './file/drag-drop.js';
 import { renderRecentFiles } from './file/recent-files.js';
 import { openFolder } from './file/folder-tree.js';
@@ -111,8 +111,9 @@ export async function initApp() {
   // 2. Initialize theme (before editor creation)
   // Note: initTheme calls setEditorTheme internally, but editor doesn't exist yet.
   // So we just detect the theme first.
-  const prefersDark = localStorage.getItem('marklink-theme') === 'dark'
-    || (!localStorage.getItem('marklink-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  // Default to dark mode unless user explicitly chose light
+  const savedTheme = localStorage.getItem('marklink-theme');
+  const prefersDark = savedTheme === 'light' ? false : true; // dark by default
 
   // 3. Create editor
   const editorContainer = document.getElementById('editor-container');
@@ -181,12 +182,13 @@ export async function initApp() {
     });
   }
 
-  // Save file button
+  // Save file button — prompts for location/name (Save As behavior)
   const saveBtn = document.getElementById('btn-save');
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
       try {
-        await saveFile(getContent());
+        const result = await saveFile(getContent());
+        if (result) updateFileName(result.name);
       } catch (e) {
         console.error('Save file error:', e);
       }
@@ -232,7 +234,8 @@ export async function initApp() {
     },
     save: async () => {
       try {
-        await saveFile(getContent());
+        const result = await quickSave(getContent());
+        if (result) updateFileName(result.name);
       } catch (e) {
         console.error(e);
       }

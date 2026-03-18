@@ -1,4 +1,5 @@
 // MarkLink SL — File Manager (File System Access API + fallback)
+import { generateTimestampFilename } from '../export/filename-utils.js';
 
 let currentFileHandle = null;
 let currentFileName = 'untitled.md';
@@ -22,24 +23,51 @@ export async function openFile() {
 }
 
 /**
- * Save content to file
+ * Save content to file — always prompts for location/name
+ * Default filename: YYYYMMDD_HHMMSS_originalName.md
  * @param {string} content - Markdown content to save
  */
 export async function saveFile(content) {
-  if (hasFileSystemAccess() && currentFileHandle) {
-    return saveFileModern(content);
+  const suggestedName = generateTimestampFilename(currentFileName, 'md');
+
+  if (hasFileSystemAccess()) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName,
+        types: [{
+          description: 'Markdown Files',
+          accept: { 'text/markdown': ['.md'] },
+        }],
+      });
+      currentFileHandle = handle;
+      currentFileName = handle.name;
+      const writable = await handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      addToRecent(currentFileName);
+      return { name: currentFileName };
+    } catch (e) {
+      if (e.name === 'AbortError') return null; // User cancelled
+      throw e;
+    }
   }
-  return saveFileFallback(content);
+
+  // Fallback: download with timestamp name
+  return saveFileFallback(content, suggestedName);
 }
 
 /**
- * Save As — always prompt for new file
+ * Quick Save — save to current handle without prompting (if available)
+ * Falls back to saveFile() if no handle exists
  */
-export async function saveFileAs(content) {
-  if (hasFileSystemAccess()) {
-    return saveFileAsModern(content);
+export async function quickSave(content) {
+  if (hasFileSystemAccess() && currentFileHandle) {
+    const writable = await currentFileHandle.createWritable();
+    await writable.write(content);
+    await writable.close();
+    return { name: currentFileName };
   }
-  return saveFileFallback(content);
+  return saveFile(content);
 }
 
 // --- Modern API (Chromium) ---
@@ -58,27 +86,6 @@ async function openFileModern() {
   const content = await file.text();
   addToRecent(currentFileName);
   return { name: currentFileName, content };
-}
-
-async function saveFileModern(content) {
-  const writable = await currentFileHandle.createWritable();
-  await writable.write(content);
-  await writable.close();
-}
-
-async function saveFileAsModern(content) {
-  const handle = await window.showSaveFilePicker({
-    suggestedName: currentFileName,
-    types: [{
-      description: 'Markdown Files',
-      accept: { 'text/markdown': ['.md'] },
-    }],
-  });
-  currentFileHandle = handle;
-  currentFileName = handle.name;
-  await saveFileModern(content);
-  addToRecent(currentFileName);
-  return { name: currentFileName };
 }
 
 // --- Fallback (Safari/Firefox) ---
@@ -100,14 +107,15 @@ function openFileFallback() {
   });
 }
 
-function saveFileFallback(content) {
+function saveFileFallback(content, filename) {
   const blob = new Blob([content], { type: 'text/markdown' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = currentFileName;
+  a.download = filename || currentFileName;
   a.click();
   URL.revokeObjectURL(url);
+  return { name: filename };
 }
 
 // --- Recent Files ---
@@ -144,5 +152,5 @@ export function getCurrentFileName() {
  */
 export function setFileName(name) {
   currentFileName = name;
-  currentFileHandle = null; // No handle for dropped files
+  currentFileHandle = null;
 }

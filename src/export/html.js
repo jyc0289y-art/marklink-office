@@ -1,13 +1,14 @@
 // MarkLink SL — HTML Export (standalone file)
 
 import { render } from '../preview/renderer.js';
+import { generateTimestampFilename } from './filename-utils.js';
 
 /**
  * Export rendered markdown as standalone HTML file
  * @param {string} markdownText - Markdown content
  * @param {string} fileName - Base file name
  */
-export function exportHTML(markdownText, fileName = 'document') {
+export async function exportHTML(markdownText, fileName = 'document') {
   const html = render(markdownText);
   const standalone = `<!DOCTYPE html>
 <html lang="ko">
@@ -98,11 +99,33 @@ export function exportHTML(markdownText, fileName = 'document') {
 </body>
 </html>`;
 
+  const defaultName = generateTimestampFilename(fileName, 'html');
+
+  // If File System Access API available, let user choose save location
+  if ('showSaveFilePicker' in window) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: defaultName,
+        types: [{
+          description: 'HTML Files',
+          accept: { 'text/html': ['.html'] },
+        }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(standalone);
+      await writable.close();
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return; // User cancelled
+    }
+  }
+
+  // Fallback: download with timestamp name
   const blob = new Blob([standalone], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${fileName.replace(/\.(md|markdown)$/i, '')}.html`;
+  a.download = defaultName;
   a.click();
   URL.revokeObjectURL(url);
 }
