@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="light">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MarkLink SL</title>
+  <title>MarkLink Office</title>
+  <meta name="description" content="Free browser-based office suite. No installation, no account. Files stay on your computer." />
+  <meta name="theme-color" content="#0071e3" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="stylesheet" href="/src/styles/main.css" />
   <link rel="stylesheet" href="/src/styles/editor.css" />
   <link rel="stylesheet" href="/src/styles/preview.css" />
@@ -12,100 +16,191 @@
   <link rel="stylesheet" href="/src/styles/theme-dark.css" />
 </head>
 <body>
-  <!-- Toolbar -->
-  <header id="toolbar" class="toolbar">
-    <div class="toolbar-left">
-      <span class="toolbar-brand">✦ MarkLink SL</span>
-      <div class="toolbar-divider"></div>
-      <button id="btn-open" class="toolbar-btn" title="Open File (⌘O)">
-        <span class="icon">📂</span>
-      </button>
-      <button id="btn-save" class="toolbar-btn" title="Save File (⌘S)">
-        <span class="icon">💾</span>
-      </button>
-      <div class="toolbar-divider"></div>
-      <button id="btn-bold" class="toolbar-btn" title="Bold (⌘B)">
-        <span class="icon"><b>B</b></span>
-      </button>
-      <button id="btn-italic" class="toolbar-btn" title="Italic (⌘I)">
-        <span class="icon"><i>I</i></span>
-      </button>
-      <button id="btn-heading" class="toolbar-btn" title="Heading">
-        <span class="icon">H</span>
-      </button>
-      <button id="btn-code" class="toolbar-btn" title="Code Block">
-        <span class="icon">&lt;/&gt;</span>
-      </button>
-      <button id="btn-list" class="toolbar-btn" title="List">
-        <span class="icon">☰</span>
-      </button>
-      <button id="btn-link" class="toolbar-btn" title="Link">
-        <span class="icon">🔗</span>
-      </button>
-      <button id="btn-table" class="toolbar-btn" title="Table">
-        <span class="icon">▦</span>
-      </button>
-    </div>
-    <div class="toolbar-right">
-      <button id="btn-sidebar" class="toolbar-btn" title="Toggle Sidebar">
-        <span class="icon">📁</span>
-      </button>
-      <button id="btn-export" class="toolbar-btn" title="Export">
-        <span class="icon">⬇</span>
-      </button>
-      <button id="btn-theme" class="toolbar-btn" title="Toggle Theme">
-        <span class="icon" id="theme-icon">🌙</span>
-      </button>
-      <div class="toolbar-divider"></div>
-      <span id="file-name" class="toolbar-filename">untitled.md</span>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main id="app" class="app-container">
-    <!-- Sidebar (hidden by default) -->
-    <aside id="sidebar" class="sidebar hidden">
-      <div class="sidebar-header">
-        <span>Files</span>
-        <button id="btn-open-folder" class="toolbar-btn" title="Open Folder">📂+</button>
+  <!-- Landing Page -->
+  <div id="landing" class="landing">
+    <div class="landing-content">
+      <div class="landing-logo">
+        <svg width="56" height="56" viewBox="0 0 64 64">
+          <rect width="64" height="64" rx="14" fill="#0071e3"/>
+          <text x="32" y="44" font-family="system-ui, sans-serif" font-size="32" font-weight="800" fill="white" text-anchor="middle">M</text>
+          <circle cx="50" cy="14" r="6" fill="#2997ff"/>
+          <path d="M47 14 L53 14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <path d="M50 11 L50 17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h1 class="landing-brand">MarkLink Office</h1>
       </div>
-      <div id="folder-tree" class="folder-tree"></div>
-      <div class="sidebar-section">
-        <span class="sidebar-label">Recent</span>
-        <ul id="recent-files" class="recent-files"></ul>
-      </div>
-    </aside>
+      <h2 id="landing-title" class="landing-title">Your Free Office in the Browser</h2>
+      <p id="landing-subtitle" class="landing-subtitle">No installation. No account. Your files stay on your computer.</p>
+      <button id="landing-cta" class="landing-cta">Start Writing</button>
 
-    <!-- Split Pane -->
-    <div id="split-pane" class="split-pane">
-      <!-- Editor -->
-      <div id="editor-pane" class="pane editor-pane">
-        <div class="pane-header">
-          <span>Editor</span>
+      <div class="landing-features">
+        <div class="feature-card">
+          <span class="feature-icon">&#x1F310;</span>
+          <h3 id="feat1-title">Zero Installation</h3>
+          <p id="feat1-desc">Works instantly in your browser. No download needed.</p>
         </div>
-        <div id="editor-container" class="editor-container"></div>
-      </div>
-
-      <!-- Divider -->
-      <div id="divider" class="divider" title="Drag to resize"></div>
-
-      <!-- Preview -->
-      <div id="preview-pane" class="pane preview-pane">
-        <div class="pane-header">
-          <span>Preview</span>
+        <div class="feature-card">
+          <span class="feature-icon">&#x1F512;</span>
+          <h3 id="feat2-title">Complete Privacy</h3>
+          <p id="feat2-desc">Files never leave your device. No cloud upload.</p>
         </div>
-        <div id="preview-container" class="preview-container">
-          <div id="preview-content" class="markdown-body"></div>
+        <div class="feature-card">
+          <span class="feature-icon">&#x1F4B0;</span>
+          <h3 id="feat3-title">Always Free</h3>
+          <p id="feat3-desc">No subscription, no hidden fees. Free forever.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">&#x26A1;</span>
+          <h3 id="feat4-title">Works Offline</h3>
+          <p id="feat4-desc">Install as an app. Use it without internet.</p>
         </div>
       </div>
+
+      <div class="landing-tools">
+        <div class="tool-available">
+          <span class="tool-badge active" id="landing-md-label">Markdown Editor</span>
+          <p id="landing-md-desc" class="tool-desc">Live preview, math (KaTeX), diagrams (Mermaid), code highlighting, PDF/HTML export.</p>
+        </div>
+        <p id="landing-more" class="landing-more">Document, Spreadsheet, Presentation, and PDF tools are coming next.</p>
+      </div>
+
+      <div class="landing-lang">
+        <button id="btn-lang-en" class="lang-btn active">EN</button>
+        <button id="btn-lang-ko" class="lang-btn">KO</button>
+      </div>
     </div>
-  </main>
+  </div>
+
+  <!-- App (hidden until CTA clicked) -->
+  <div id="app-wrapper" class="app-wrapper hidden">
+    <!-- Tab Bar -->
+    <nav id="tab-bar" class="tab-bar">
+      <button class="tab active" data-tab="markdown">
+        <span class="tab-icon">&#x270D;&#xFE0F;</span>
+        <span class="tab-label" data-i18n="tabMarkdown">Markdown</span>
+      </button>
+      <button class="tab disabled" data-tab="document" disabled>
+        <span class="tab-icon">&#x1F4C4;</span>
+        <span class="tab-label" data-i18n="tabDocument">Document</span>
+        <span class="tab-badge" data-i18n="comingSoon">Coming Soon</span>
+      </button>
+      <button class="tab disabled" data-tab="sheet" disabled>
+        <span class="tab-icon">&#x1F4CA;</span>
+        <span class="tab-label" data-i18n="tabSheet">Sheet</span>
+        <span class="tab-badge" data-i18n="comingSoon">Coming Soon</span>
+      </button>
+      <button class="tab disabled" data-tab="slide" disabled>
+        <span class="tab-icon">&#x1F4FD;&#xFE0F;</span>
+        <span class="tab-label" data-i18n="tabSlide">Slide</span>
+        <span class="tab-badge" data-i18n="comingSoon">Coming Soon</span>
+      </button>
+      <button class="tab disabled" data-tab="pdf" disabled>
+        <span class="tab-icon">&#x1F4D1;</span>
+        <span class="tab-label" data-i18n="tabPdf">PDF</span>
+        <span class="tab-badge" data-i18n="comingSoon">Coming Soon</span>
+      </button>
+      <div class="tab-spacer"></div>
+      <button id="btn-feedback" class="tab-feedback" title="Send Feedback">
+        <span>&#x1F4AC;</span>
+      </button>
+      <button id="btn-lang-toggle" class="tab-lang" title="Language">EN</button>
+    </nav>
+
+    <!-- Toolbar -->
+    <header id="toolbar" class="toolbar">
+      <div class="toolbar-left">
+        <span class="toolbar-brand">MarkLink Office</span>
+        <div class="toolbar-divider"></div>
+        <button id="btn-open" class="toolbar-btn" title="Open File (⌘O)">
+          <span class="icon">&#x1F4C2;</span>
+        </button>
+        <button id="btn-save" class="toolbar-btn" title="Save File (⌘S)">
+          <span class="icon">&#x1F4BE;</span>
+        </button>
+        <div class="toolbar-divider"></div>
+        <button id="btn-bold" class="toolbar-btn" title="Bold (⌘B)">
+          <span class="icon"><b>B</b></span>
+        </button>
+        <button id="btn-italic" class="toolbar-btn" title="Italic (⌘I)">
+          <span class="icon"><i>I</i></span>
+        </button>
+        <button id="btn-heading" class="toolbar-btn" title="Heading">
+          <span class="icon">H</span>
+        </button>
+        <button id="btn-code" class="toolbar-btn" title="Code Block">
+          <span class="icon">&lt;/&gt;</span>
+        </button>
+        <button id="btn-list" class="toolbar-btn" title="List">
+          <span class="icon">&#x2630;</span>
+        </button>
+        <button id="btn-link" class="toolbar-btn" title="Link">
+          <span class="icon">&#x1F517;</span>
+        </button>
+        <button id="btn-table" class="toolbar-btn" title="Table">
+          <span class="icon">&#x25A6;</span>
+        </button>
+      </div>
+      <div class="toolbar-right">
+        <button id="btn-sidebar" class="toolbar-btn" title="Toggle Sidebar">
+          <span class="icon">&#x1F4C1;</span>
+        </button>
+        <button id="btn-export" class="toolbar-btn" title="Export">
+          <span class="icon">&#x2B07;</span>
+        </button>
+        <button id="btn-theme" class="toolbar-btn" title="Toggle Theme">
+          <span class="icon" id="theme-icon">&#x1F319;</span>
+        </button>
+        <div class="toolbar-divider"></div>
+        <span id="file-name" class="toolbar-filename">untitled.md</span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="app" class="app-container">
+      <!-- Sidebar (hidden by default) -->
+      <aside id="sidebar" class="sidebar hidden">
+        <div class="sidebar-header">
+          <span data-i18n="files">Files</span>
+          <button id="btn-open-folder" class="toolbar-btn" title="Open Folder">&#x1F4C2;+</button>
+        </div>
+        <div id="folder-tree" class="folder-tree"></div>
+        <div class="sidebar-section">
+          <span class="sidebar-label" data-i18n="recent">Recent</span>
+          <ul id="recent-files" class="recent-files"></ul>
+        </div>
+      </aside>
+
+      <!-- Split Pane -->
+      <div id="split-pane" class="split-pane">
+        <!-- Editor -->
+        <div id="editor-pane" class="pane editor-pane">
+          <div class="pane-header">
+            <span data-i18n="editor">Editor</span>
+          </div>
+          <div id="editor-container" class="editor-container"></div>
+        </div>
+
+        <!-- Divider -->
+        <div id="divider" class="divider" title="Drag to resize"></div>
+
+        <!-- Preview -->
+        <div id="preview-pane" class="pane preview-pane">
+          <div class="pane-header">
+            <span data-i18n="preview">Preview</span>
+          </div>
+          <div id="preview-container" class="preview-container">
+            <div id="preview-content" class="markdown-body"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 
   <!-- Drop Zone Overlay -->
   <div id="drop-overlay" class="drop-overlay hidden">
     <div class="drop-message">
-      <span class="drop-icon">📄</span>
-      <span>Drop .md file here</span>
+      <span class="drop-icon">&#x1F4C4;</span>
+      <span data-i18n="dropFile">Drop file here</span>
     </div>
   </div>
 

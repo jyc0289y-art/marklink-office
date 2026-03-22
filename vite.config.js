@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/marklink-sl/',
+  base: '/marklink-office/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

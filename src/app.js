@@ -1,4 +1,4 @@
-// MarkLink SL — App Controller
+// MarkLink Office — App Controller
 import { createEditor, onChange, getContent, setContent, wrapSelection } from './editor/editor.js';
 import { initPreview, updatePreview, updatePreviewImmediate } from './preview/preview.js';
 import { registerAllPlugins } from './preview/plugins.js';
@@ -15,36 +15,29 @@ import { openFolder } from './file/folder-tree.js';
 import { printDocument } from './export/print.js';
 import { exportHTML } from './export/html.js';
 import { exportPDF } from './export/pdf.js';
+import { t, getLang, setLang } from './core/i18n.js';
 
 // Default welcome content
-const WELCOME_MD = `# Welcome to MarkLink SL ✦
+const WELCOME_MD = `# Welcome to MarkLink Office
 
-A powerful **Markdown viewer & editor** by SeouLink.
+A free **office suite** that runs in your browser. Your files never leave your computer.
 
 ## Features
 
-- 📝 **Split View** — Edit markdown on the left, see rendered preview on the right
-- 🎨 **Syntax Highlighting** — Code blocks with language detection
-- 🌙 **Dark Mode** — Toggle with the moon icon or auto-detect system preference
-- 📂 **File Management** — Open, save, and drag-and-drop \`.md\` files
-- 📁 **Folder Browser** — Browse directories (Chrome/Edge)
-- 🔍 **Search** — Press \`Cmd+F\` to search within the editor
-- 📤 **Export** — Print or export as standalone HTML
+- **Split View** — Edit markdown on the left, see rendered preview on the right
+- **Syntax Highlighting** — Code blocks with language detection
+- **Dark Mode** — Toggle with the theme button
+- **File Management** — Open, save, and drag-and-drop files
+- **Folder Browser** — Browse directories (Chrome/Edge)
+- **Search** — Press \`Cmd+F\` to search within the editor
+- **Export** — Print, PDF, or standalone HTML
 
 ## Quick Start
 
-1. **Open a file**: Click 📂 or press \`⌘O\`
+1. **Open a file**: Click the folder icon or press \`⌘O\`
 2. **Save**: Press \`⌘S\`
-3. **Toggle theme**: Click 🌙
+3. **Toggle theme**: Click the moon/sun icon
 4. **Search**: Press \`⌘F\`
-
-## Checklist
-
-- [x] Create project structure
-- [x] Implement split view editor
-- [x] Add syntax highlighting
-- [ ] Deploy to GitHub Pages
-- [ ] Share with team
 
 ## Code Block
 
@@ -55,27 +48,21 @@ async function fetchData(url) {
 }
 \`\`\`
 
-\`\`\`python
-def fibonacci(n):
-    if n <= 1:
-        return n
-    return fibonacci(n-1) + fibonacci(n-2)
-\`\`\`
-
 ## Table
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Editor | CodeMirror 6 | ✅ |
-| Preview | markdown-it | ✅ |
-| Math | KaTeX | ✅ |
-| Diagrams | Mermaid | ✅ |
+| Feature | Status |
+|---------|--------|
+| Markdown Editor | Available |
+| Document Editor | Coming Soon |
+| Spreadsheet | Coming Soon |
+| Presentation | Coming Soon |
+| PDF Tools | Coming Soon |
 
 ## Math (KaTeX)
 
-Inline math: $E = mc^2$
+Inline: $E = mc^2$
 
-Block math:
+Block:
 
 $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
@@ -83,17 +70,12 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
 \`\`\`mermaid
 graph LR
-    A[Open File] --> B[Edit MD]
-    B --> C[Live Preview]
+    A[Open File] --> B[Edit]
+    B --> C[Preview]
     C --> D{Done?}
     D -->|Yes| E[Export]
     D -->|No| B
 \`\`\`
-
-## Blockquote
-
-> The best way to predict the future is to create it.
-> — *Peter Drucker*
 
 ---
 
@@ -101,62 +83,128 @@ graph LR
 `;
 
 /**
- * Initialize the MarkLink SL application
+ * Initialize the landing page
  */
-export async function initApp() {
-  // 1. Register markdown-it plugins (async — KaTeX, task lists)
+function initLanding() {
+  const landing = document.getElementById('landing');
+  const appWrapper = document.getElementById('app-wrapper');
+  const ctaBtn = document.getElementById('landing-cta');
+
+  // Check if user has visited before — skip landing
+  if (localStorage.getItem('marklink-visited')) {
+    landing.classList.add('hidden');
+    appWrapper.classList.remove('hidden');
+    return false; // landing skipped
+  }
+
+  // Language buttons on landing
+  const langEn = document.getElementById('btn-lang-en');
+  const langKo = document.getElementById('btn-lang-ko');
+
+  function updateLandingLang() {
+    document.getElementById('landing-title').textContent = t('landingTitle');
+    document.getElementById('landing-subtitle').textContent = t('landingSubtitle');
+    ctaBtn.textContent = t('landingCta');
+    document.getElementById('feat1-title').textContent = t('landingFeature1Title');
+    document.getElementById('feat1-desc').textContent = t('landingFeature1Desc');
+    document.getElementById('feat2-title').textContent = t('landingFeature2Title');
+    document.getElementById('feat2-desc').textContent = t('landingFeature2Desc');
+    document.getElementById('feat3-title').textContent = t('landingFeature3Title');
+    document.getElementById('feat3-desc').textContent = t('landingFeature3Desc');
+    document.getElementById('feat4-title').textContent = t('landingFeature4Title');
+    document.getElementById('feat4-desc').textContent = t('landingFeature4Desc');
+    document.getElementById('landing-md-label').textContent = t('landingMarkdown');
+    document.getElementById('landing-md-desc').textContent = t('landingMarkdownDesc');
+    document.getElementById('landing-more').textContent = t('landingMoreComing');
+
+    langEn.classList.toggle('active', getLang() === 'en');
+    langKo.classList.toggle('active', getLang() === 'ko');
+  }
+
+  langEn?.addEventListener('click', () => { setLang('en'); updateLandingLang(); });
+  langKo?.addEventListener('click', () => { setLang('ko'); updateLandingLang(); });
+
+  updateLandingLang();
+
+  // CTA button
+  ctaBtn?.addEventListener('click', () => {
+    localStorage.setItem('marklink-visited', '1');
+    landing.classList.add('hidden');
+    appWrapper.classList.remove('hidden');
+    initEditor();
+  });
+
+  return true; // landing shown
+}
+
+/**
+ * Update all i18n text in the app UI
+ */
+function updateAppLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+
+  const langToggle = document.getElementById('btn-lang-toggle');
+  if (langToggle) langToggle.textContent = getLang().toUpperCase();
+}
+
+/**
+ * Initialize the main editor
+ */
+let editorInitialized = false;
+
+async function initEditor() {
+  if (editorInitialized) return;
+  editorInitialized = true;
+
+  // 1. Register markdown-it plugins
   const md = getRenderer();
   await registerAllPlugins(md);
 
-  // 2. Initialize theme (before editor creation)
-  // Note: initTheme calls setEditorTheme internally, but editor doesn't exist yet.
-  // So we just detect the theme first.
-  // Default to dark mode unless user explicitly chose light
+  // 2. Theme
   const savedTheme = localStorage.getItem('marklink-theme');
-  const prefersDark = savedTheme === 'light' ? false : true; // dark by default
+  const prefersDark = savedTheme === 'light' ? false : true;
 
   // 3. Create editor
   const editorContainer = document.getElementById('editor-container');
-  const previewContent = document.getElementById('preview-content');
   createEditor(editorContainer, WELCOME_MD, prefersDark);
 
-  // 4. Initialize preview
+  // 4. Preview
+  const previewContent = document.getElementById('preview-content');
   initPreview(previewContent);
   updatePreviewImmediate(WELCOME_MD);
 
-  // 5. Connect editor changes to preview
+  // 5. Editor → preview
   onChange((content) => {
     updatePreview(content);
   });
 
-  // 6. Initialize split pane
+  // 6. Split pane
   const divider = document.getElementById('divider');
   const editorPane = document.getElementById('editor-pane');
   const previewPane = document.getElementById('preview-pane');
   initSplitPane(divider, editorPane, previewPane);
 
-  // 7. Initialize theme toggle (now editor exists)
+  // 7. Theme toggle
   initTheme();
-
-  // 8. Theme toggle button
   const themeBtn = document.getElementById('btn-theme');
-  if (themeBtn) {
-    themeBtn.addEventListener('click', toggleTheme);
-  }
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
 
-  // 9. Toolbar actions
+  // 8. Toolbar
   initToolbar();
 
-  // 10. Sidebar
+  // 9. Sidebar
   initSidebar();
 
-  // 11. File operations
+  // 10. File operations
   const fileNameEl = document.getElementById('file-name');
 
   function updateFileName(name) {
     setFileName(name);
     if (fileNameEl) fileNameEl.textContent = name;
-    document.title = `${name} — MarkLink SL`;
+    document.title = `${name} — MarkLink Office`;
   }
 
   function loadFile({ name, content }) {
@@ -164,12 +212,10 @@ export async function initApp() {
     setContent(content);
     updatePreviewImmediate(content);
     renderRecentFiles(document.getElementById('recent-files'), (n) => {
-      // Recent file click — can't reopen without handle, just update name
       console.log('Recent file clicked:', n);
     });
   }
 
-  // Open file button
   const openBtn = document.getElementById('btn-open');
   if (openBtn) {
     openBtn.addEventListener('click', async () => {
@@ -182,7 +228,6 @@ export async function initApp() {
     });
   }
 
-  // Save file button — prompts for location/name (Save As behavior)
   const saveBtn = document.getElementById('btn-save');
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
@@ -195,7 +240,6 @@ export async function initApp() {
     });
   }
 
-  // Open folder button
   const openFolderBtn = document.getElementById('btn-open-folder');
   if (openFolderBtn) {
     openFolderBtn.addEventListener('click', async () => {
@@ -211,18 +255,16 @@ export async function initApp() {
     });
   }
 
-  // 12. Drag and drop
+  // 11. Drag and drop
   initDragDrop(loadFile);
 
-  // 13. Export button (dropdown or direct HTML export)
+  // 12. Export
   const exportBtn = document.getElementById('btn-export');
   if (exportBtn) {
-    exportBtn.addEventListener('click', () => {
-      showExportMenu(exportBtn);
-    });
+    exportBtn.addEventListener('click', () => showExportMenu(exportBtn));
   }
 
-  // 14. Keyboard shortcuts
+  // 13. Shortcuts
   initShortcuts({
     open: async () => {
       try {
@@ -245,20 +287,55 @@ export async function initApp() {
     print: () => printDocument(getContent(), getCurrentFileName()),
   });
 
-  // 15. Render recent files
+  // 14. Recent files
   renderRecentFiles(document.getElementById('recent-files'), (name) => {
     console.log('Recent file clicked:', name);
   });
 
-  // 16. Scroll sync
+  // 15. Scroll sync
   initScrollSync(editorContainer, document.getElementById('preview-container'));
+
+  // 16. i18n for app
+  updateAppLang();
+}
+
+/**
+ * Initialize the app
+ */
+export async function initApp() {
+  // Landing page
+  const landingShown = initLanding();
+
+  // Tab bar — language toggle
+  const langToggle = document.getElementById('btn-lang-toggle');
+  if (langToggle) {
+    langToggle.textContent = getLang().toUpperCase();
+    langToggle.addEventListener('click', () => {
+      const next = getLang() === 'en' ? 'ko' : 'en';
+      setLang(next);
+      langToggle.textContent = next.toUpperCase();
+      updateAppLang();
+    });
+  }
+
+  // Feedback button
+  const feedbackBtn = document.getElementById('btn-feedback');
+  if (feedbackBtn) {
+    feedbackBtn.addEventListener('click', () => {
+      window.open('https://github.com/jyc0289y-art/marklink-office/issues', '_blank');
+    });
+  }
+
+  // If landing was skipped, init editor immediately
+  if (!landingShown) {
+    await initEditor();
+  }
 }
 
 /**
  * Show export dropdown menu
  */
 function showExportMenu(anchorBtn) {
-  // Remove existing menu
   const existing = document.querySelector('.export-menu');
   if (existing) {
     existing.remove();
@@ -270,7 +347,7 @@ function showExportMenu(anchorBtn) {
   menu.style.cssText = `
     position: absolute;
     right: 12px;
-    top: 48px;
+    top: 84px;
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -281,9 +358,9 @@ function showExportMenu(anchorBtn) {
   `;
 
   const items = [
-    { label: '🖨️ Print', action: () => printDocument(getContent(), getCurrentFileName()) },
-    { label: '📄 Export as PDF', action: () => exportPDF(getContent(), getCurrentFileName()) },
-    { label: '🌐 Export as HTML', action: () => exportHTML(getContent(), getCurrentFileName()) },
+    { label: `🖨️ ${t('print')}`, action: () => printDocument(getContent(), getCurrentFileName()) },
+    { label: `📄 ${t('exportPdf')}`, action: () => exportPDF(getContent(), getCurrentFileName()) },
+    { label: `🌐 ${t('exportHtml')}`, action: () => exportHTML(getContent(), getCurrentFileName()) },
   ];
 
   items.forEach(({ label, action }) => {
@@ -312,7 +389,6 @@ function showExportMenu(anchorBtn) {
 
   document.body.appendChild(menu);
 
-  // Close on outside click
   setTimeout(() => {
     const closeHandler = (e) => {
       if (!menu.contains(e.target) && e.target !== anchorBtn) {
@@ -332,7 +408,6 @@ function initScrollSync(editorContainer, previewContainer) {
 
   let syncing = false;
 
-  // Editor scroll → preview scroll
   const editorScroller = editorContainer?.querySelector('.cm-scroller');
   if (editorScroller) {
     editorScroller.addEventListener('scroll', () => {
